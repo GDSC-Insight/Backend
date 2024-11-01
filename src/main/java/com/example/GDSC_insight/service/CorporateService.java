@@ -1,6 +1,4 @@
 package com.example.GDSC_insight.service;
-
-
 import com.example.GDSC_insight.domain.Corporate;
 import com.example.GDSC_insight.dto.CorporateRegisterRequest;
 import com.example.GDSC_insight.dto.LoginResponse;
@@ -39,5 +37,8 @@ public class CorporateService {
                 .build();
         corporateRepository.save(corporate);
     }
+
+    public Optional<Corporate> findById(Long id) {
+        return corporateRepository.findById(id);
 
 }

@@ -10,5 +10,4 @@ import org.springframework.stereotype.Repository;
 public interface CorporateRepository extends JpaRepository<Corporate, Integer> {
 
     Optional<Corporate> findByLoginId(String loginId);
-
 }
