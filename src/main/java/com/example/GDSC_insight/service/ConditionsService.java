@@ -1,5 +1,6 @@
 package com.example.GDSC_insight.service;
 
+import com.example.GDSC_insight.domain.Announcement;
 import com.example.GDSC_insight.domain.Conditions;
 import com.example.GDSC_insight.repository.ConditionsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,5 +13,9 @@ public class ConditionsService {
 
     public Conditions save(Conditions conditions){
         return conditionsRepository.save(conditions);
+    }
+
+    public Conditions findByAnnouncement(Announcement announcement) {
+        return conditionsRepository.findByAnnouncement(announcement);
     }
 }

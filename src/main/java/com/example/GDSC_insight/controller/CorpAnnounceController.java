@@ -21,7 +21,7 @@ public class CorpAnnounceController {
     private ConditionsService conditionsService;
 
     @PostMapping("")
-    public ResponseEntity<String> writeComment(@ModelAttribute PostAnnounce postAnnounce) {
+    public ResponseEntity<String> writePost(@ModelAttribute PostAnnounce postAnnounce) {
 
         Announcement announcement = new Announcement();
         Conditions conditions = new Conditions();
@@ -50,6 +50,51 @@ public class CorpAnnounceController {
         conditions.setIncomeLevel(postAnnounce.getIncome_level());
 
         conditionsService.save(conditions);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("{announcement_id}")
+    public ResponseEntity<String> updatePost(@PathVariable Long announcement_id,
+                                             @ModelAttribute PostAnnounce postAnnounce) {
+        // Announcement 객체를 ID로 조회
+        Announcement existingAnnouncement = announcementService.findById(announcement_id);
+        if (existingAnnouncement == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Announcement not found");
+        }
+
+        // Announcement 객체 업데이트
+        existingAnnouncement.setTitle(postAnnounce.getTitle());
+        existingAnnouncement.setDescription(postAnnounce.getDescription());
+
+        // 이미지 BLOB 처리
+        if (postAnnounce.getImageFile() != null && !postAnnounce.getImageFile().isEmpty()) {
+            try {
+                byte[] imageBytes = postAnnounce.getImageFile().getBytes();
+                existingAnnouncement.setImage(imageBytes);
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload image");
+            }
+        }
+
+        // 나머지 필드 업데이트
+        existingAnnouncement.setDeadline(postAnnounce.getDeadline());
+        existingAnnouncement.setNumTarget(postAnnounce.getNum_target());
+
+        // Announcement 업데이트
+        announcementService.save(existingAnnouncement);
+
+        // Conditions 객체 업데이트
+        Conditions conditions = conditionsService.findByAnnouncement(existingAnnouncement);
+        if (conditions == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Conditions not found");
+        }
+        conditions.setNumChildren(postAnnounce.getNum_children());
+        conditions.setSingleParent(postAnnounce.getSingle_parent());
+        conditions.setIncomeLevel(postAnnounce.getIncome_level());
+
+        // Conditions 업데이트
+        conditionsService.save(conditions);
+
         return ResponseEntity.ok().build();
     }
 }
