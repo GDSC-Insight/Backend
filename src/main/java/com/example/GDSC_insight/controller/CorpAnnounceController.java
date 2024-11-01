@@ -1,5 +1,6 @@
 package com.example.GDSC_insight.controller;
 
+import com.example.GDSC_insight.config.auth.domain.CorporatePrincipalDetails;
 import com.example.GDSC_insight.domain.Announcement;
 import com.example.GDSC_insight.domain.Conditions;
 import com.example.GDSC_insight.domain.Corporate;
@@ -13,6 +14,7 @@ import com.example.GDSC_insight.service.CorporateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -32,7 +34,8 @@ public class CorpAnnounceController {
     private ApplicationService applicationService;
 
     @PostMapping("")
-    public ResponseEntity<String> writePost(@ModelAttribute PostAnnounce postAnnounce) {
+    public ResponseEntity<String> writePost(@ModelAttribute PostAnnounce postAnnounce, Authentication authentication) {
+        Corporate corporate=getUser(authentication);
         Announcement announcement = new Announcement();
         Conditions conditions = new Conditions();
         announcement.setTitle(postAnnounce.getTitle());
@@ -50,6 +53,7 @@ public class CorpAnnounceController {
 
 
         // 나머지 필드 설정
+        announcement.setAuthor(corporate);
         announcement.setDeadline(postAnnounce.getDeadline());
         announcement.setNumTarget(postAnnounce.getNum_target());
         Announcement savedAnnouncement = announcementService.save(announcement);
@@ -122,24 +126,22 @@ public class CorpAnnounceController {
     }
 
     @GetMapping("")
-    public ResponseEntity<corpAnnounce> getPost(){
+    public ResponseEntity<corpAnnounce> getPost(Authentication authentication){
         //기업 id 가져오기
-
+        Corporate corporate=getUser(authentication);
         //기업 id로 Corporate 정보 검색
-        Corporate corporate= corporateService.findById(id);
-
 
         //데이터 조합
         List<corpAnnounceList> announcementList = new ArrayList<>();
 
         // Announcement 엔티티에서 데이터를 가져와서 announcementList에 추가
-        List<Announcement> announcements = announcementService.findByAuthor(id);
+        List<Announcement> announcements = announcementService.findByAuthor(corporate.getId());
         for (Announcement announcement : announcements) {
             corpAnnounceList listItem = new corpAnnounceList();
             listItem.setAnnouncement_id(announcement.getId());
             listItem.setTitle(announcement.getTitle());
-            listItem.setPost_date(announcement.getPostDate().toString()); // LocalDateTime 형식에 맞게 변환
-            listItem.setDeadline(announcement.getDeadline().toString());
+            listItem.setPost_date(announcement.getPostDate()); // LocalDateTime 형식에 맞게 변환
+            listItem.setDeadline(announcement.getDeadline());
             listItem.setNum_target(announcement.getNumTarget());
             listItem.setCurrent_num_target(applicationService.countApplicationsByAnnouncementId(announcement.getId()));
             announcementList.add(listItem);
@@ -147,12 +149,17 @@ public class CorpAnnounceController {
 
         // corpAnnounce 객체 생성 및 값 설정
         corpAnnounce response = new corpAnnounce();
-        response.setCorporate_id(id);
+        response.setCorporate_id(corporate.getId());
         response.setName(corporate.getName());
         response.setAnnouncement(announcementList);
 
         return ResponseEntity.ok(response);
-
-        return ResponseEntity.ok().build();
+    }
+    public Corporate getUser(Authentication authentication) {
+        return getPrincipalUser(authentication);
+    }
+    private Corporate getPrincipalUser(Authentication authentication) {
+        CorporatePrincipalDetails principal = (CorporatePrincipalDetails) authentication.getPrincipal();
+        return principal.getUser();
     }
 }

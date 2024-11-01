@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 public class corpAnnounce {
-    private int corporate_id;
+    private long corporate_id;
     private String name;
     private List<corpAnnounceList> announcement;
 }

@@ -5,7 +5,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 @Data
 public class corpAnnounceList {
-    private int announcement_id;
+    private long announcement_id;
     private String title;
     private LocalDateTime post_date;
     private LocalDateTime deadline;
