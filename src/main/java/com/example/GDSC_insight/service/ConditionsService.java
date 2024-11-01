@@ -18,4 +18,8 @@ public class ConditionsService {
     public Conditions findByAnnouncement(Announcement announcement) {
         return conditionsRepository.findByAnnouncement(announcement);
     }
+
+    public void deleteByAnnouncementId(Long announcementId) {
+        conditionsRepository.deleteByAnnouncementId(announcementId);
+    }
 }

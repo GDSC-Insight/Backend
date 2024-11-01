@@ -21,4 +21,8 @@ public class AnnouncementService {
     public Announcement save(Announcement announcement) {
         return announcementRepository.save(announcement);
     }
+
+    public void deleteById(Long announcementId) {
+        announcementRepository.deleteById(announcementId);
+    }
 }

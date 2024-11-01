@@ -22,7 +22,6 @@ public class CorpAnnounceController {
 
     @PostMapping("")
     public ResponseEntity<String> writePost(@ModelAttribute PostAnnounce postAnnounce) {
-
         Announcement announcement = new Announcement();
         Conditions conditions = new Conditions();
         announcement.setTitle(postAnnounce.getTitle());
@@ -96,5 +95,18 @@ public class CorpAnnounceController {
         conditionsService.save(conditions);
 
         return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("{announcement_id}")
+    public ResponseEntity<String> deletePost(@PathVariable Long announcement_id){
+        // Announcement 존재 여부 확인
+        Announcement existingAnnouncement = announcementService.findById(announcement_id);
+        if (existingAnnouncement == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("삭제할 공고를 찾을 수 없습니다.");
+        }
+        // Announcement 삭제
+        announcementService.deleteById(announcement_id);
+        conditionsService.deleteByAnnouncementId(announcement_id);
+        return ResponseEntity.ok("Announcement deleted successfully");
     }
 }
