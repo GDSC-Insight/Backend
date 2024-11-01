@@ -5,6 +5,7 @@ import com.example.GDSC_insight.repository.AnnouncementRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,5 +25,9 @@ public class AnnouncementService {
 
     public void deleteById(Long announcementId) {
         announcementRepository.deleteById(announcementId);
+    }
+
+    public List<Announcement> findByAuthor(Long corporateId) {
+        return announcementRepository.findByAuthor_Id(corporateId); // Repository 메서드 호출
     }
 }

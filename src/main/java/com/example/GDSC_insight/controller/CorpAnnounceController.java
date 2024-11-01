@@ -2,15 +2,22 @@ package com.example.GDSC_insight.controller;
 
 import com.example.GDSC_insight.domain.Announcement;
 import com.example.GDSC_insight.domain.Conditions;
+import com.example.GDSC_insight.domain.Corporate;
 import com.example.GDSC_insight.dto.PostAnnounce;
+import com.example.GDSC_insight.dto.corpAnnounce;
+import com.example.GDSC_insight.dto.corpAnnounceList;
 import com.example.GDSC_insight.service.AnnouncementService;
+import com.example.GDSC_insight.service.ApplicationService;
 import com.example.GDSC_insight.service.ConditionsService;
+import com.example.GDSC_insight.service.CorporateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/corporate/announcement")
@@ -19,6 +26,10 @@ public class CorpAnnounceController {
     private AnnouncementService announcementService;
     @Autowired
     private ConditionsService conditionsService;
+    @Autowired
+    private CorporateService corporateService;
+    @Autowired
+    private ApplicationService applicationService;
 
     @PostMapping("")
     public ResponseEntity<String> writePost(@ModelAttribute PostAnnounce postAnnounce) {
@@ -107,6 +118,41 @@ public class CorpAnnounceController {
         // Announcement 삭제
         announcementService.deleteById(announcement_id);
         conditionsService.deleteByAnnouncementId(announcement_id);
-        return ResponseEntity.ok("Announcement deleted successfully");
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("")
+    public ResponseEntity<corpAnnounce> getPost(){
+        //기업 id 가져오기
+
+        //기업 id로 Corporate 정보 검색
+        Corporate corporate= corporateService.findById(id);
+
+
+        //데이터 조합
+        List<corpAnnounceList> announcementList = new ArrayList<>();
+
+        // Announcement 엔티티에서 데이터를 가져와서 announcementList에 추가
+        List<Announcement> announcements = announcementService.findByAuthor(id);
+        for (Announcement announcement : announcements) {
+            corpAnnounceList listItem = new corpAnnounceList();
+            listItem.setAnnouncement_id(announcement.getId());
+            listItem.setTitle(announcement.getTitle());
+            listItem.setPost_date(announcement.getPostDate().toString()); // LocalDateTime 형식에 맞게 변환
+            listItem.setDeadline(announcement.getDeadline().toString());
+            listItem.setNum_target(announcement.getNumTarget());
+            listItem.setCurrent_num_target(applicationService.countApplicationsByAnnouncementId(announcement.getId()));
+            announcementList.add(listItem);
+        }
+
+        // corpAnnounce 객체 생성 및 값 설정
+        corpAnnounce response = new corpAnnounce();
+        response.setCorporate_id(id);
+        response.setName(corporate.getName());
+        response.setAnnouncement(announcementList);
+
+        return ResponseEntity.ok(response);
+
+        return ResponseEntity.ok().build();
     }
 }
